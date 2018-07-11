@@ -1,3 +1,4 @@
+
 # -*- coding: UTF-8 -*-
 from __future__ import print_function
 import json
@@ -10,7 +11,7 @@ import torch.optim as optim
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 
-from seg_dataload import Data_set_seg
+from seg_dataload import Dataset_seg
 from skunet import SKUNET
 from utils import progress_bar
 
@@ -65,10 +66,10 @@ if __name__ == '__main__':
     print('Use cuda: ' + str(use_cuda))
 
 
-    # 载入各个图片中疑似钙化区域图片，大小与原图尺寸相同但是疑似区域有加边框。？？
+    # 载入训练数据
 
 
-    trainset = Data_set_seg(input_dir)
+    trainset = Dataset_seg(input_dir)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True,
                                               num_workers=num_workers)
     net = SKUNET()
@@ -78,8 +79,9 @@ if __name__ == '__main__':
         net.cuda()
         cudnn.benchmark = True
 
-    optimizer = optim.SGD(net.parameters(), lr=0.05, momentum=0.9, weight_decay=5e-4)
-    #optimizer = optim.Adam(net.parameters(), lr=0.1)
+
+    #optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 
     if load_model:
@@ -100,11 +102,11 @@ if __name__ == '__main__':
         loss_sum = 0
         # train
         for batch_idx, (inputs, targets) in enumerate(trainloader):
-            # 输入与输出？？的大小
+            
             if use_cuda and not cpu:
                 inputs, targets= inputs.cuda(), targets.cuda()
             optimizer.zero_grad()
-            # 输入是整张图片
+            # 输入整张切片
             inputs,  targets = Variable(inputs),  Variable(targets)
 
             outputs = net(inputs)
@@ -122,9 +124,11 @@ if __name__ == '__main__':
             progress_bar(batch_idx, len(trainloader), 'Loss: %.3f )'
                          % (train_loss / (batch_idx + 1)))
             i += 1
-            if i % DUMPING_CYCLE == 0 and now_epoch % DUMPING_CYCLE == 0:
+            if i % DUMPING_CYCLE == 0 or now_epoch % DUMPING_CYCLE == 0:
                 out_param = out_param_file + "-" + str(now_epoch) + "-" + time.strftime("%Y%m%d") + ".pkl"
-                torch.save(net.state_dict(), os.path.join(out_dir, out_param))
+                torch.save(net.state_dict(),
+                           os.path.join(out_dir,
+                                        out_param))
 
 
 
