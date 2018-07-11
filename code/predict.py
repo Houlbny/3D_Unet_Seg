@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
-from seg_dataload import Data_set_seg
+from seg_dataload import Dataset_seg
 from torch.autograd import Variable
 from skunet import SKUNET
 import numpy as np
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         net.cuda()
         cudnn.benchmark = True
     '''
-    testset = Data_set_seg('./test_data')
+    testset = Dataset_seg('./test_data')
 
     trainloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
     datanum = 14
@@ -82,8 +82,8 @@ if __name__ == '__main__':
         #
 
 
-        clean = Data_set_seg.__nrrd2np__('./test_data', './test_data/' + str(datanum) + '/' + str(datanum) + '+.nrrd')
-        label = Data_set_seg.__nrrd2np__('./test_data', './test_data/' + str(datanum) + '/' + str(datanum) + '+_label.nrrd')
+        clean = Dataset_seg.__nrrd2np__('./test_data', './test_data/' + str(datanum) + '/' + str(datanum) + '+.nrrd')
+        label = Dataset_seg.__nrrd2np__('./test_data', './test_data/' + str(datanum) + '/' + str(datanum) + '+_label.nrrd')
 
         nrrd.write('./result/' + str(datanum)+'/' + str(datanum) + '+label.nrrd', output_seg_results[0])
         nrrd.write('./result/' + str(datanum)+'/' + str(datanum) + '+.nrrd', clean)
