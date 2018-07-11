@@ -9,7 +9,7 @@ import nrrd
 
 
 
-class Data_set_seg(Dataset):
+class Dataset_seg(Dataset):
 
 
     def __init__(self, root_dir):
