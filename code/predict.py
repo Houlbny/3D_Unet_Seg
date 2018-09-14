@@ -31,7 +31,7 @@ if __name__ == '__main__':
     cpu = json.loads(args.cpu.lower())
 
     net = SKUNET()
-    model = torch.load('./output256_1000/256-900.pkl', map_location=lambda storage, loc: storage)
+    model = torch.load('./output/seg-result.pkl', map_location=lambda storage, loc: storage)
     new_model = {}
     for key, value in model.items():
         new_key = key[7:]
@@ -49,12 +49,14 @@ if __name__ == '__main__':
         cudnn.benchmark = True
     '''
     testset = Dataset_seg('./test_data')
-
+    patients_index = testset.patients
     trainloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
-    datanum = 14
-
     for batch_idx, (inputs, targets) in enumerate(trainloader):
-        datanum += 1
+
+        patient_index = patients_index[batch_idx]
+
+        print('patient_index=', patient_index)
+
         output_seg_results = []
 
         inputs = Variable(inputs)
@@ -82,12 +84,12 @@ if __name__ == '__main__':
         #
 
 
-        clean = Dataset_seg.__nrrd2np__('./test_data', './test_data/' + str(datanum) + '/' + str(datanum) + '+.nrrd')
-        label = Dataset_seg.__nrrd2np__('./test_data', './test_data/' + str(datanum) + '/' + str(datanum) + '+_label.nrrd')
+        clean = Dataset_seg.__nrrd2np__('./test_data', './test_data/' + patient_index + '/' + patient_index + '+.nrrd')
+        label = Dataset_seg.__nrrd2np__('./test_data', './test_data/' + patient_index + '/' + patient_index + '+_label.nrrd')
 
-        nrrd.write('./result/' + str(datanum)+'/' + str(datanum) + '+label.nrrd', output_seg_results[0])
-        nrrd.write('./result/' + str(datanum)+'/' + str(datanum) + '+.nrrd', clean)
-        nrrd.write('./result/' + str(datanum)+'/' + str(datanum) + '+true_label.nrrd', label)
+        nrrd.write('./result/' + patient_index+'/' + patient_index + '+label.nrrd', output_seg_results[0])
+        nrrd.write('./result/' + patient_index+'/' + patient_index + '+.nrrd', clean)
+        nrrd.write('./result/' + patient_index+'/' + patient_index + '+true_label.nrrd', label)
 
         # for i in range(64):
         #     plt.imsave('./result/256/15/result_%s.png' % i, output_seg_results[0, :, :, i])
