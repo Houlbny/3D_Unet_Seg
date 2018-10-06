@@ -1,0 +1,38 @@
+# -*- coding: UTF-8 -*-
+import nrrd
+import numpy as np
+import os
+from seg_dataload import Dataset_seg
+
+def error_label(predict_label, true_label):
+
+    error = true_label - predict_label
+    print("error", error[error == 1])
+
+    mislabel = error.copy()  # 错分，true = 0, predict = 1
+    mislabel[mislabel == -1] = -1
+    mislabel[mislabel != -1] = 0
+
+
+    lacklabel = error.copy()  # 少分，true = 1, predict = 0
+    lacklabel[lacklabel == 1] = 1
+    lacklabel[lacklabel != 1] = 0
+    return mislabel, lacklabel
+
+
+path = os.listdir("./testdata")
+for i in path:
+    try:
+        predict_label, predict_option = nrrd.read("./testdata/"+i+"/"+i+"_predict_1.nrrd")
+        predict_label = np.array(predict_label, dtype=float)
+
+        true_label, true_option = nrrd.read("./testdata/"+i+"/"+i+"+true_label.nrrd")
+        true_label = np.array(true_label, dtype=float)
+        true_label[true_label >= 0.5] = 1
+        true_label[true_label < 0.5] = 0
+
+        mis, lack = error_label(predict_label, true_label)
+        nrrd.write('./testdata/'+i+'/'+i+'_lack.nrrd', lack)
+        nrrd.write('./testdata/'+i+'/'+i+'_mis.nrrd', mis)
+    except:
+        pass
