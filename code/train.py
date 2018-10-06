@@ -32,6 +32,24 @@ def dice_loss(input, target):
     return 1 - ((2. * intersection + smooth) /
                 (iflat.sum() + tflat.sum() + smooth))
 
+
+def houl_loss(input, target, *scribbles):
+    smooth = 1.
+
+    iflat = input.view(-1)
+    iflat = nn.Sigmoid()(iflat)
+    tflat = target.view(-1)
+    intersection1 = (iflat * tflat).sum()
+    if scribbles:
+        s = scribbles[0]
+        sflat = s.view(-1)
+        intersection2 = (iflat * sflat).sum()
+        return 1 - 0.3 * ((2. * intersection1 + smooth) / (iflat.sum() + tflat.sum() + smooth)) - \
+                   0.7 * ((2. * intersection2 + smooth) / (iflat.sum() + sflat.sum() + smooth))
+    else:
+        return 1 - ((2. * intersection1 + smooth) / (iflat.sum() + tflat.sum() + smooth))
+    
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_dir", help="dicom folder path")
