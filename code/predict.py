@@ -22,6 +22,7 @@ if __name__ == '__main__':
 
     scale = 256
 
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("--test_dir", help="input folder path")  # 存放测试数据
     parser.add_argument("--cpu", help="use cpu", default='False')
